@@ -2,14 +2,38 @@
 Celery configuration for async video processing
 """
 import os
+import ssl
 from celery import Celery
 from config.settings import settings
+from urllib.parse import urlparse, urlunparse
+
+# Function to ensure Redis URLs have proper SSL options if using rediss://
+def prepare_redis_url(url):
+    parsed_url = urlparse(url)
+    
+    # If using secure Redis (rediss://)
+    if parsed_url.scheme == 'rediss':
+        # Check if ssl_cert_reqs parameter exists in query
+        query_parts = parsed_url.query.split('&') if parsed_url.query else []
+        has_ssl_cert_reqs = any(part.startswith('ssl_cert_reqs=') for part in query_parts)
+        
+        if not has_ssl_cert_reqs:
+            # Add ssl_cert_reqs=CERT_NONE if not present
+            new_query = f"{'&'.join(query_parts)}&ssl_cert_reqs=CERT_NONE" if query_parts else "ssl_cert_reqs=CERT_NONE"
+            parsed_url = parsed_url._replace(query=new_query)
+            
+        return urlunparse(parsed_url)
+    return url
+
+# Prepare Redis URLs with SSL options if needed
+broker_url = prepare_redis_url(settings.CELERY_BROKER_URL)
+result_backend = prepare_redis_url(settings.CELERY_RESULT_BACKEND)
 
 # Create Celery instance
 celery_app = Celery(
     "video_processor",
-    broker=settings.CELERY_BROKER_URL,
-    backend=settings.CELERY_RESULT_BACKEND,
+    broker=broker_url,
+    backend=result_backend,
     include=[
         "tasks.video_processing",
         "tasks.cleanup"

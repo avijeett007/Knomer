@@ -150,21 +150,42 @@ async def health_check():
     try:
         import redis
         import logging
-        from urllib.parse import urlparse
+        import ssl
+        from urllib.parse import urlparse, parse_qs
         
         # Use the Redis URL from settings instead of hardcoded values
         redis_url = settings.REDIS_URL
         url = urlparse(redis_url)
+        query_params = parse_qs(url.query)
         
         # Parse host and port from URL
         host = url.hostname or 'redis'
         port = url.port or 6379
         password = url.password
         db = int(url.path.replace('/', '') or 0)
+        scheme = url.scheme
         
         # Log connection details (with obfuscated password)
         password_masked = "*****" if password else None
-        scheme = url.scheme
+        
+        # Set up SSL if using rediss://
+        ssl_params = {}
+        if scheme == 'rediss':
+            # Check for SSL options in URL query
+            ssl_cert_reqs = query_params.get('ssl_cert_reqs', ['CERT_REQUIRED'])[0]
+            
+            # Map string to ssl module constants
+            cert_reqs_map = {
+                'CERT_REQUIRED': ssl.CERT_REQUIRED,
+                'CERT_OPTIONAL': ssl.CERT_OPTIONAL,
+                'CERT_NONE': ssl.CERT_NONE
+            }
+            
+            ssl_params = {
+                'ssl': True,
+                'ssl_cert_reqs': cert_reqs_map.get(ssl_cert_reqs, ssl.CERT_REQUIRED)
+            }
+            print(f"Using SSL with cert_reqs: {ssl_cert_reqs}")
         
         # Create connection info for logging
         connection_info = {
@@ -173,7 +194,8 @@ async def health_check():
             "port": port,
             "password_present": password is not None,
             "password_length": len(password) if password else 0,
-            "db": db
+            "db": db,
+            "ssl_enabled": scheme == 'rediss'
         }
         print(f"Attempting Redis connection with: {connection_info}")
         
@@ -183,7 +205,8 @@ async def health_check():
             port=port, 
             password=password,
             db=db,
-            decode_responses=True
+            decode_responses=True,
+            **ssl_params
         )
         
         # Test connection
