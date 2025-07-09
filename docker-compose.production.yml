@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+
+  video-processor-api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./temp_storage:/app/temp_storage
+      - /tmp/video_processing:/tmp/video_processing
+    env_file:
+      - .env.production
+    networks:
+      - video_network
+    # Redis configuration comes from .env.production file
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    restart: unless-stopped
+    volumes:
+      - ./temp_storage:/app/temp_storage
+      - /tmp/video_processing:/tmp/video_processing
+    env_file:
+      - .env.production
+    networks:
+      - video_network
+    # Redis configuration comes from .env.production file
+    command: celery -A services.celery_app worker --loglevel=info --concurrency=2 --max-tasks-per-child=10
+    healthcheck:
+      test: ["CMD", "celery", "-A", "services.celery_app", "inspect", "ping"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  # Cleanup service for temp files
+  cleanup-service:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./temp_storage:/app/temp_storage
+      - /tmp/video_processing:/tmp/video_processing
+    env_file:
+      - .env.production
+    networks:
+      - video_network
+    # Redis configuration comes from .env.production file
+    command: >
+      sh -c "while true; do
+        sleep 3600;
+        curl -X POST http://video-processor-api:8000/admin/cleanup \
+          -F 'max_age_hours=2' \
+          -F 'admin_api_key=${ADMIN_API_KEY}' || true;
+      done"
+
+networks:
+  video_network:
+    driver: bridge
+
+volumes:

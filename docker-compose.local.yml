@@ -56,7 +56,9 @@ services:
 
   # Celery worker for video processing (simplified for local testing)
   celery-worker:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
     volumes:
       - ./temp:/tmp/video_processing
       - ./database:/app/database
@@ -76,7 +78,7 @@ services:
       - redis
       - video-processor-api
     restart: unless-stopped
-    command: celery -A celery_app worker --loglevel=info --queues=video_processing,file_management,cleanup
+    command: celery -A services.celery_app worker --loglevel=info --queues=video_processing,file_management,cleanup
 
   # Test runner service
   test-runner:

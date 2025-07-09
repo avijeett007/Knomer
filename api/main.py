@@ -149,10 +149,27 @@ async def health_check():
     # Check Redis (try to connect)
     try:
         import redis
-        r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+        from urllib.parse import urlparse
+        # Use the Redis URL from settings instead of hardcoded values
+        redis_url = settings.REDIS_URL
+        url = urlparse(redis_url)
+        # Parse host and port from URL
+        host = url.hostname or 'redis'
+        port = url.port or 6379
+        password = url.password
+        db = int(url.path.replace('/', '') or 0)
+        
+        r = redis.Redis(
+            host=host,
+            port=port, 
+            password=password,
+            db=db,
+            decode_responses=True
+        )
         r.ping()
         services_status["redis"] = True
-    except:
+    except Exception as e:
+        print(f"Redis connection error: {e}")
         services_status["redis"] = False
 
     # Check storage (directory exists and writable)

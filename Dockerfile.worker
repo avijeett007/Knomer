@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
+# Explicitly declare volumes to fix ContainerConfig error
+VOLUME ["/app/temp_storage", "/tmp/video_processing", "/app/storage"]
+
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
