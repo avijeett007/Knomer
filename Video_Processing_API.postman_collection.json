@@ -1,0 +1,463 @@
+{
+	"info": {
+		"_postman_id": "video-processing-api-collection",
+		"name": "Video Processing API - Complete Collection",
+		"description": "Comprehensive Postman collection for testing the Video Processing API with all endpoints including health checks, authentication, credit management, and video processing jobs.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "video-processing-api"
+	},
+	"item": [
+		{
+			"name": "🏥 Health & Status",
+			"item": [
+				{
+					"name": "Root Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": ["{{base_url}}"],
+							"path": [""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detailed Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "System Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/stats",
+							"host": ["{{base_url}}"],
+							"path": ["stats"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "💳 Credit Management",
+			"item": [
+				{
+					"name": "Get User Credits",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/credits",
+							"host": ["{{base_url}}"],
+							"path": ["credits"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Estimate Credits - Simple Merge",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"job_type\": \"simple_merge\",\n  \"videos\": [\n    {\n      \"url\": \"https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4\",\n      \"duration\": 30.0,\n      \"order_index\": 0\n    },\n    {\n      \"url\": \"https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4\",\n      \"duration\": 25.0,\n      \"order_index\": 1\n    }\n  ],\n  \"processing_options\": {\n    \"quality_preset\": \"balanced\",\n    \"transitions\": [\n      {\n        \"type\": \"fade\",\n        \"duration\": 1.0\n      }\n    ]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/credits/estimate",
+							"host": ["{{base_url}}"],
+							"path": ["credits", "estimate"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Estimate Credits - Auto Effects",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"job_type\": \"auto_effects\",\n  \"videos\": [\n    {\n      \"url\": \"https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_5mb.mp4\",\n      \"duration\": 120.0,\n      \"order_index\": 0\n    }\n  ],\n  \"processing_options\": {\n    \"quality_preset\": \"high\",\n    \"enable_transcription\": true,\n    \"ai_effects_based_on_transcript\": true,\n    \"platform\": \"tiktok\",\n    \"logo_overlay\": {\n      \"logo_url\": \"https://example.com/logo.png\",\n      \"position\": \"top-right\",\n      \"size\": 0.15,\n      \"opacity\": 0.8\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/credits/estimate",
+							"host": ["{{base_url}}"],
+							"path": ["credits", "estimate"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🎬 Job Management",
+			"item": [
+				{
+					"name": "Create Simple Merge Job",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save job ID for subsequent requests",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('job_id', response.id);",
+									"    console.log('Job ID saved:', response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"job_type\": \"simple_merge\",\n  \"videos\": [\n    {\n      \"url\": \"https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4\",\n      \"duration\": 30.0,\n      \"order_index\": 0\n    },\n    {\n      \"url\": \"https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4\",\n      \"duration\": 25.0,\n      \"order_index\": 1\n    }\n  ],\n  \"processing_options\": {\n    \"quality_preset\": \"balanced\",\n    \"transitions\": [\n      {\n        \"type\": \"fade\",\n        \"duration\": 1.0\n      }\n    ]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/jobs",
+							"host": ["{{base_url}}"],
+							"path": ["jobs"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Auto Effects Job",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save job ID for subsequent requests",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('auto_effects_job_id', response.id);",
+									"    console.log('Auto Effects Job ID saved:', response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"job_type\": \"auto_effects\",\n  \"videos\": [\n    {\n      \"url\": \"https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_5mb.mp4\",\n      \"duration\": 60.0,\n      \"order_index\": 0\n    }\n  ],\n  \"processing_options\": {\n    \"quality_preset\": \"high\",\n    \"enable_transcription\": true,\n    \"ai_effects_based_on_transcript\": true,\n    \"platform\": \"youtube\",\n    \"auto_effects\": true\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/jobs",
+							"host": ["{{base_url}}"],
+							"path": ["jobs"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Logo Overlay Job",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save job ID for subsequent requests",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('logo_job_id', response.id);",
+									"    console.log('Logo Job ID saved:', response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"job_type\": \"simple_merge\",\n  \"videos\": [\n    {\n      \"url\": \"https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4\",\n      \"duration\": 30.0,\n      \"order_index\": 0\n    }\n  ],\n  \"processing_options\": {\n    \"quality_preset\": \"balanced\",\n    \"logo_overlay\": {\n      \"logo_url\": \"https://via.placeholder.com/100x100/FF0000/FFFFFF?text=LOGO\",\n      \"position\": \"top-right\",\n      \"size\": 0.15,\n      \"opacity\": 0.8\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/jobs",
+							"host": ["{{base_url}}"],
+							"path": ["jobs"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create TikTok Conversion Job",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save job ID for subsequent requests",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('tiktok_job_id', response.id);",
+									"    console.log('TikTok Job ID saved:', response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"job_type\": \"auto_effects\",\n  \"videos\": [\n    {\n      \"url\": \"https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_5mb.mp4\",\n      \"duration\": 45.0,\n      \"order_index\": 0\n    }\n  ],\n  \"processing_options\": {\n    \"quality_preset\": \"high\",\n    \"platform\": \"tiktok\",\n    \"enable_transcription\": true,\n    \"ai_effects_based_on_transcript\": true,\n    \"auto_effects\": true\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/jobs",
+							"host": ["{{base_url}}"],
+							"path": ["jobs"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📊 Job Status & Monitoring",
+			"item": [
+				{
+					"name": "Get Job Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/jobs/{{job_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["jobs", "{{job_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Auto Effects Job Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/jobs/{{auto_effects_job_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["jobs", "{{auto_effects_job_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List All User Jobs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/jobs?page=1&page_size=10",
+							"host": ["{{base_url}}"],
+							"path": ["jobs"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Recent Jobs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/jobs?page=1&page_size=5",
+							"host": ["{{base_url}}"],
+							"path": ["jobs"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-set timestamp for requests",
+					"pm.environment.set('timestamp', new Date().toISOString());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script for all requests",
+					"pm.test('Response time is less than 5000ms', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"pm.test('Response has correct content type', function () {",
+					"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8001",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "vp_UHUnroUYlsyEg8TD79ef4ApKarClmF9FXYH6ROSfM3g",
+			"type": "string"
+		}
+	]
+}

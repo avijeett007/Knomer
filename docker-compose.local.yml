@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # Redis for job queue
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Main API service with local SQLite
+  video-processor-api:
+    build: .
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./temp:/tmp/video_processing
+      - ./database:/app/database
+      - ./tests:/app/tests
+    environment:
+      - PYTHONUNBUFFERED=1
+      - USE_SQLITE=true
+      - USE_LOCAL_STORAGE=true
+      - SQLITE_DB_PATH=/app/database/test_database.db
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=local-development-secret-key-not-for-production
+      - JWT_SECRET=local-jwt-secret-not-for-production
+      - DEBUG=true
+      - TEMP_STORAGE_PATH=/tmp/video_processing
+      - FREE_TIER_CREDITS=10000
+      - DEFAULT_RATE_LIMIT_PER_MINUTE=1000
+      - DEFAULT_RATE_LIMIT_PER_HOUR=10000
+      - DEFAULT_RATE_LIMIT_PER_DAY=100000
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: >
+      sh -c "
+        python database/sqlite_setup.py &&
+        uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  # Celery worker for video processing (simplified for local testing)
+  celery-worker:
+    build: .
+    volumes:
+      - ./temp:/tmp/video_processing
+      - ./database:/app/database
+      - ./tests:/app/tests
+    environment:
+      - PYTHONUNBUFFERED=1
+      - USE_SQLITE=true
+      - USE_LOCAL_STORAGE=true
+      - SQLITE_DB_PATH=/app/database/test_database.db
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=local-development-secret-key-not-for-production
+      - JWT_SECRET=local-jwt-secret-not-for-production
+      - TEMP_STORAGE_PATH=/tmp/video_processing
+    depends_on:
+      - redis
+      - video-processor-api
+    restart: unless-stopped
+    command: celery -A celery_app worker --loglevel=info --queues=video_processing,file_management,cleanup
+
+  # Test runner service
+  test-runner:
+    build: .
+    volumes:
+      - ./temp:/tmp/video_processing
+      - ./database:/app/database
+      - ./tests:/app/tests
+    environment:
+      - PYTHONUNBUFFERED=1
+      - USE_SQLITE=true
+      - USE_LOCAL_STORAGE=true
+      - SQLITE_DB_PATH=/app/database/test_database.db
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=local-development-secret-key-not-for-production
+      - JWT_SECRET=local-jwt-secret-not-for-production
+      - TEMP_STORAGE_PATH=/tmp/video_processing
+    depends_on:
+      - video-processor-api
+    profiles:
+      - testing
+    command: >
+      sh -c "
+        echo 'Waiting for API to be ready...' &&
+        sleep 10 &&
+        python tests/run_tests.py --type api
+      "
+
+volumes:
+  redis_data:

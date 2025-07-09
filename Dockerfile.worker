@@ -1,0 +1,38 @@
+# Dockerfile for Celery Worker
+FROM python:3.11-slim
+
+# Install system dependencies including FFmpeg
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    gcc \
+    python3-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install additional packages for worker
+RUN pip install requests
+
+# Copy application code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p /tmp/video_processing
+RUN mkdir -p /app/storage
+
+# Set environment variables for worker mode
+ENV WORKER_MODE=true
+ENV PYTHONPATH=/app
+
+# Health check for worker
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD celery -A services.celery_app inspect ping || exit 1
+
+# Run Celery worker with optimized settings
+CMD ["celery", "-A", "services.celery_app", "worker", "--loglevel=info", "--concurrency=2", "--max-tasks-per-child=10"]

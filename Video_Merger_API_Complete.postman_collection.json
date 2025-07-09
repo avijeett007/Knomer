@@ -1,0 +1,622 @@
+{
+  "info": {
+    "name": "Video Merger API - Complete Collection",
+    "description": "Complete API collection for Video Merger API with all endpoints, real data processing, and no mock responses. Ready for frontend development.",
+    "version": "2.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "vp_P1dSaC5nCXzUj6JfWvx_vCzKBA2YtPO6kykdaCXYRFg",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8001",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "vp_P1dSaC5nCXzUj6JfWvx_vCzKBA2YtPO6kykdaCXYRFg",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Status",
+      "item": [
+        {
+          "name": "Root Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detailed Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "System Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["stats"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Credit Management",
+      "item": [
+        {
+          "name": "Get User Credits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/credits",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "credits"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Estimate Credits",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_type\": \"simple_merge\",\n  \"videos\": [\n    {\n      \"url\": \"https://example.com/video1.mp4\",\n      \"duration\": 30.0,\n      \"order_index\": 0\n    },\n    {\n      \"url\": \"https://example.com/video2.mp4\",\n      \"duration\": 45.0,\n      \"order_index\": 1\n    }\n  ],\n  \"processing_options\": {\n    \"platform\": \"youtube\",\n    \"quality_preset\": \"balanced\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/credits/estimate",
+              "host": ["{{baseUrl}}"],
+              "path": ["credits", "estimate"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Video Processing",
+      "item": [
+        {
+          "name": "Simple Video Merge",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video_files",
+                  "type": "file",
+                  "src": "tests/sample_videos/Yetti_Patel_s_London_Vlog.mp4"
+                },
+                {
+                  "key": "video_files",
+                  "type": "file",
+                  "src": "tests/sample_videos/Yetti_Patel_s_UK_Tour_Intro.mp4"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/merge",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "merge"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Video Merge with Transitions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video_files",
+                  "type": "file",
+                  "src": "tests/sample_videos/Yetti_Patel_s_London_Vlog.mp4"
+                },
+                {
+                  "key": "video_files",
+                  "type": "file",
+                  "src": "tests/sample_videos/Yetti_Patel_s_UK_Tour_Intro.mp4"
+                },
+                {
+                  "key": "transition_file",
+                  "type": "file",
+                  "src": "tests/sample_videos/Animation_Transition.mp4"
+                },
+                {
+                  "key": "transition_duration",
+                  "value": "1.0",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/merge-with-transitions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "merge-with-transitions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logo Overlay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video_file",
+                  "type": "file",
+                  "src": "tests/sample_videos/Yetti_Patel_s_London_Vlog.mp4"
+                },
+                {
+                  "key": "logo_file",
+                  "type": "file",
+                  "src": "tests/sample_videos/knolabslogo.png"
+                },
+                {
+                  "key": "position",
+                  "value": "top-right",
+                  "type": "text"
+                },
+                {
+                  "key": "scale",
+                  "value": "0.15",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/logo-overlay",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "logo-overlay"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Premium AI Processing",
+      "item": [
+        {
+          "name": "Premium Credit Estimation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video_file",
+                  "type": "file",
+                  "src": "tests/sample_videos/Complete_Whitelabel_Is_Here.mov"
+                },
+                {
+                  "key": "enable_smart_zooming",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "enable_smart_captioning",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "enable_logo_overlay",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/premium/estimate-credits",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "premium", "estimate-credits"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Premium AI Processing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video_file",
+                  "type": "file",
+                  "src": "tests/sample_videos/Complete_Whitelabel_Is_Here.mov"
+                },
+                {
+                  "key": "logo_file",
+                  "type": "file",
+                  "src": "tests/sample_videos/knolabslogo.png"
+                },
+                {
+                  "key": "enable_smart_zooming",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "enable_smart_captioning",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "enable_logo_overlay",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "processing_quality",
+                  "value": "high",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/premium/process",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "premium", "process"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Job Status & Monitoring",
+      "item": [
+        {
+          "name": "Get Basic Job Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "jobs", "{{jobId}}"],
+              "variable": [
+                {
+                  "key": "jobId",
+                  "value": "sample-job-id-123"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Premium Job Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/premium/jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "premium", "jobs", "{{jobId}}"],
+              "variable": [
+                {
+                  "key": "jobId",
+                  "value": "sample-premium-job-id-123"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "File Download",
+      "item": [
+        {
+          "name": "Download Processed Video",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/download/{{filename}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "download", "{{filename}}"],
+              "variable": [
+                {
+                  "key": "filename",
+                  "value": "sample-job-id_merged.mp4"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "AI Effect Analysis",
+      "item": [
+        {
+          "name": "Analyze Video for AI Effects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video_file",
+                  "type": "file",
+                  "src": "tests/sample_videos/Complete_Whitelabel_Is_Here.mov"
+                },
+                {
+                  "key": "analysis_type",
+                  "value": "comprehensive",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/analyze-effects",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "ai", "analyze-effects"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin - User Management",
+      "item": [
+        {
+          "name": "Create User with Credits",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "email",
+                  "value": "user@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "John Doe",
+                  "type": "text"
+                },
+                {
+                  "key": "subscription_tier",
+                  "value": "premium",
+                  "type": "text"
+                },
+                {
+                  "key": "initial_credits",
+                  "value": "50000",
+                  "type": "text"
+                },
+                {
+                  "key": "admin_api_key",
+                  "value": "admin-super-secret-key-change-in-production",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Provision Monthly Credits",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "credits_amount",
+                  "value": "25000",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Monthly premium subscription credits",
+                  "type": "text"
+                },
+                {
+                  "key": "admin_api_key",
+                  "value": "admin-super-secret-key-change-in-production",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{userId}}/credits",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users", "{{userId}}", "credits"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "123e4567-e89b-12d3-a456-426614174000"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{userId}}?admin_api_key=admin-super-secret-key-change-in-production",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users", "{{userId}}"],
+              "query": [
+                {
+                  "key": "admin_api_key",
+                  "value": "admin-super-secret-key-change-in-production"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "123e4567-e89b-12d3-a456-426614174000"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cleanup Temp Files",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "max_age_hours",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "admin_api_key",
+                  "value": "admin-super-secret-key-change-in-production",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/cleanup",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "cleanup"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

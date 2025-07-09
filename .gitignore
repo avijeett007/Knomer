@@ -1,0 +1,13 @@
+.env.local
+.env.production
+.env.development
+.env.testing
+.env.example
+.env
+
+.env.local
+
+test_outputs/*
+tests/sample_videos/*
+*.mp4
+
