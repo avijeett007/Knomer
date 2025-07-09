@@ -149,16 +149,35 @@ async def health_check():
     # Check Redis (try to connect)
     try:
         import redis
+        import logging
         from urllib.parse import urlparse
+        
         # Use the Redis URL from settings instead of hardcoded values
         redis_url = settings.REDIS_URL
         url = urlparse(redis_url)
+        
         # Parse host and port from URL
         host = url.hostname or 'redis'
         port = url.port or 6379
         password = url.password
         db = int(url.path.replace('/', '') or 0)
         
+        # Log connection details (with obfuscated password)
+        password_masked = "*****" if password else None
+        scheme = url.scheme
+        
+        # Create connection info for logging
+        connection_info = {
+            "url_scheme": scheme,
+            "host": host,
+            "port": port,
+            "password_present": password is not None,
+            "password_length": len(password) if password else 0,
+            "db": db
+        }
+        print(f"Attempting Redis connection with: {connection_info}")
+        
+        # Connect to Redis
         r = redis.Redis(
             host=host,
             port=port, 
@@ -166,10 +185,17 @@ async def health_check():
             db=db,
             decode_responses=True
         )
-        r.ping()
+        
+        # Test connection
+        ping_result = r.ping()
+        print(f"Redis ping result: {ping_result}")
         services_status["redis"] = True
     except Exception as e:
         print(f"Redis connection error: {e}")
+        # Show part of the URL for debugging (obfuscated)
+        if 'redis_url' in locals():
+            obfuscated_url = redis_url.replace(password or '', '*****') if password else redis_url
+            print(f"Failed Redis URL format (obfuscated): {obfuscated_url}")
         services_status["redis"] = False
 
     # Check storage (directory exists and writable)
