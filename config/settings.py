@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     API_KEY_PREFIX: str = Field(default="vp_", env="API_KEY_PREFIX")
     JWT_SECRET: str = Field(default="dev-jwt-secret", env="JWT_SECRET")
     JWT_ALGORITHM: str = Field(default="HS256", env="JWT_ALGORITHM")
+    ADMIN_API_KEY: str = Field(default="admin-secret-key", env="ADMIN_API_KEY")
     
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = Field(default=True, env="RATE_LIMIT_ENABLED")

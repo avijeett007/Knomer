@@ -257,115 +257,124 @@ docker-compose -f docker-compose.production.yml ps
 
 # Test API health
 curl http://localhost:8001/health
-```
 
-### **Step 5: Setup Application Gateway**
+### **Step 5: Configure Nginx as Reverse Proxy with SSL**
 
-```bash
-# Create public IP for Application Gateway
-az network public-ip create \
-  --resource-group video-merger-rg \
-  --name video-merger-appgw-ip \
-  --allocation-method Static \
-  --sku Standard \
-  --dns-name video-merger-api-$(date +%s)
+Instead of using Azure Application Gateway, we'll set up Nginx directly on the VM as a reverse proxy with a self-signed SSL certificate.
 
-# Get the public IP address
-APPGW_PUBLIC_IP=$(az network public-ip show \
-  --resource-group video-merger-rg \
-  --name video-merger-appgw-ip \
-  --query ipAddress \
-  --output tsv)
+### Option 1: Using the setup script
 
-echo "Application Gateway Public IP: $APPGW_PUBLIC_IP"
-
-# Create Application Gateway
-az network application-gateway create \
-  --name video-merger-appgw \
-  --location eastus \
-  --resource-group video-merger-rg \
-  --vnet-name video-merger-vnet \
-  --subnet appgw-subnet \
-  --capacity 1 \
-  --sku Standard_v2 \
-  --http-settings-cookie-based-affinity Disabled \
-  --frontend-port 80 \
-  --http-settings-port 8001 \
-  --http-settings-protocol Http \
-  --public-ip-address video-merger-appgw-ip \
-  --servers $VM_PRIVATE_IP
-
-# Create health probe for better monitoring
-az network application-gateway probe create \
-  --gateway-name video-merger-appgw \
-  --resource-group video-merger-rg \
-  --name health-probe \
-  --protocol Http \
-  --host-name-from-http-settings true \
-  --path /health \
-  --interval 30 \
-  --timeout 30 \
-  --threshold 3
-
-# Update backend HTTP settings to use health probe
-az network application-gateway http-settings update \
-  --gateway-name video-merger-appgw \
-  --resource-group video-merger-rg \
-  --name appGatewayBackendHttpSettings \
-  --probe health-probe \
-  --timeout 300 \
-  --connection-draining-timeout 60
-
-echo "Application Gateway setup complete!"
-echo "Your API will be available at: http://$APPGW_PUBLIC_IP"
-```
-
-### **Step 6: Setup Custom Domain and SSL**
+1. Copy the `setup_nginx.sh` script to the VM:
 
 ```bash
-# First, configure your DNS to point to the Application Gateway IP
-echo "Configure DNS: Create A record for your domain pointing to $APPGW_PUBLIC_IP"
+scp setup_nginx.sh adminuser@$VM_PUBLIC_IP:~/
+```
 
-# Create SSL certificate (replace with your domain)
-# Option 1: Use Azure Key Vault certificate
-az keyvault certificate create \
-  --vault-name video-merger-kv \
-  --name ssl-cert \
-  --policy "$(az keyvault certificate get-default-policy)"
+2. SSH into the VM and run the script:
 
-# Option 2: Upload existing certificate
-# az network application-gateway ssl-cert create \
-#   --gateway-name video-merger-appgw \
-#   --resource-group video-merger-rg \
-#   --name ssl-cert \
-#   --cert-file path/to/your/certificate.pfx \
-#   --cert-password your-cert-password
+```bash
+ssh adminuser@$VM_PUBLIC_IP
+chmod +x setup_nginx.sh
+sudo ./setup_nginx.sh
+```
 
-# Add HTTPS listener (after DNS is configured)
-az network application-gateway frontend-port create \
-  --gateway-name video-merger-appgw \
-  --resource-group video-merger-rg \
-  --name httpsPort \
-  --port 443
+### Option 2: Manual setup
 
-# Create HTTPS listener (replace with your domain)
-az network application-gateway http-listener create \
-  --gateway-name video-merger-appgw \
-  --resource-group video-merger-rg \
-  --name httpsListener \
-  --frontend-port httpsPort \
-  --ssl-cert ssl-cert \
-  --host-name api.yourdomain.com
+1. Install Nginx on the VM:
 
-# Create HTTPS rule
-az network application-gateway rule create \
-  --gateway-name video-merger-appgw \
-  --resource-group video-merger-rg \
-  --name httpsRule \
-  --http-listener httpsListener \
-  --rule-type Basic \
-  --address-pool appGatewayBackendPool \
-  --http-settings appGatewayBackendHttpSettings
+```bash
+sudo apt-get update
+sudo apt-get install -y nginx
+```
+
+2. Create directory for SSL certificates and generate a self-signed certificate:
+
+```bash
+sudo mkdir -p /etc/nginx/ssl
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/nginx/ssl/nginx.key \
+  -out /etc/nginx/ssl/nginx.crt \
+  -subj "/C=US/ST=State/L=City/O=Organization/CN=api.viddescriptor.com"
+```
+
+3. Create Nginx configuration for the reverse proxy:
+
+```bash
+sudo nano /etc/nginx/sites-available/video-merger
+```
+
+Paste the following configuration:
+
+```nginx
+server {
+    listen 80;
+    server_name _;
+    
+    # Redirect all HTTP traffic to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name _;
+
+    # SSL configuration
+    ssl_certificate /etc/nginx/ssl/nginx.crt;
+    ssl_certificate_key /etc/nginx/ssl/nginx.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384';
+    
+    # Proxy all requests to the FastAPI app
+    location / {
+        proxy_pass http://localhost:8001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        
+        # Increase timeouts for long-running operations
+        proxy_connect_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
+    }
+    
+    # Health check endpoint
+    location /health {
+        proxy_pass http://localhost:8001/health;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+4. Enable the site and disable the default:
+
+```bash
+sudo ln -sf /etc/nginx/sites-available/video-merger /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+```
+
+5. Test the Nginx configuration and reload:
+
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### Step 6: Configure Cloudflare for the Domain
+
+1. Log into your Cloudflare account
+2. Add your domain and set up an A record pointing to your VM's public IP
+3. Enable Cloudflare Proxy (orange cloud) to hide the actual server IP
+4. Set up SSL/TLS settings:
+   - SSL/TLS encryption mode: Full (strict)
+   - Edge certificates: Enable Always Use HTTPS
 ```
 
 ### **Step 7: Setup Monitoring and Scaling**

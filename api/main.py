@@ -1271,7 +1271,7 @@ async def create_user_with_credits(
         credit_success = credit_manager.add_credits(
             user_id=user_id,
             amount=initial_credits,
-            description=f"Initial credits for {subscription_tier} tier"
+            reason=f"Initial credits for {subscription_tier} tier"
         )
 
         if not credit_success:
@@ -1325,7 +1325,7 @@ async def provision_monthly_credits(
         success = credit_manager.add_credits(
             user_id=user_id,
             amount=credits_amount,
-            description=description
+            reason=description
         )
 
         if not success:
