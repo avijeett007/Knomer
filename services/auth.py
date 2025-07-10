@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 class AuthService:
     """Authentication and API key management service"""
     
-    def __init__(self):
-        self.db_service = DatabaseService()
+    def __init__(self, db_service=None):
+        self.db_service = db_service if db_service else DatabaseService()
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     
     def generate_api_key(self) -> tuple[str, str, str]:
