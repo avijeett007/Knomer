@@ -28,6 +28,9 @@ server {
     listen 443 ssl;
     server_name _;
 
+    # File upload settings
+    client_max_body_size 5G;
+
     # SSL configuration
     ssl_certificate /etc/nginx/ssl/nginx.crt;
     ssl_certificate_key /etc/nginx/ssl/nginx.key;
