@@ -98,6 +98,63 @@ class HybridStorageService:
             return self.upload_temp_file(file_path, storage_path)
         else:
             return self.upload_output_file(file_path, storage_path)
+            
+    def get_public_url(self, storage_path: str) -> Optional[str]:
+        """
+        Get public URL for a file in storage
+        
+        Args:
+            storage_path: Path in storage (e.g. outputs/file.mp4)
+            
+        Returns:
+            Public URL to the file if available, None otherwise
+        """
+        try:
+            if self.use_cloud_output:
+                # For cloud storage, get the URL from the cloud provider
+                return self.cloud_storage.get_public_url(storage_path)
+            else:
+                # For local storage, use SERVER_URL environment variable
+                from urllib.parse import urljoin
+                filename = os.path.basename(storage_path)
+                return urljoin(settings.SERVER_URL, f"/api/v1/download/{filename}")
+        except Exception as e:
+            logger.error(f"Error getting public URL for {storage_path}: {str(e)}")
+            return None
+    
+    async def download_from_url(self, url: str, target_path: Path) -> Optional[Path]:
+        """
+        Download file from public URL (S3, Supabase, etc.) to local path
+        
+        Args:
+            url: Public URL to download from
+            target_path: Local file path to save to
+            
+        Returns:
+            Path to downloaded file if successful, None otherwise
+        """
+        try:
+            # Create parent directories if they don't exist
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Download file with requests
+            with requests.get(url, stream=True) as response:
+                response.raise_for_status()
+                with open(target_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+            
+            # Verify download was successful
+            if target_path.exists() and target_path.stat().st_size > 0:
+                logger.info(f"Successfully downloaded {url} to {target_path}")
+                return target_path
+            else:
+                logger.error(f"Failed to download {url}: Empty file")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error downloading from URL {url}: {str(e)}")
+            return None
     
     def download_from_storage(self, storage_path: str, local_path: Path) -> bool:
         """

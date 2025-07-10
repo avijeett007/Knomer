@@ -1,0 +1,748 @@
+{
+  "info": {
+    "name": "Video Processor API v2 - Complete Collection",
+    "description": "Complete API collection for Video Processor API with both v1 and v2 endpoints, supporting both file uploads and URL-based processing.",
+    "version": "2.1.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{api_key}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "{{base_url}}",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "{{api_key}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Status",
+      "item": [
+        {
+          "name": "Root Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detailed Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "System Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/system/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "system", "stats"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "v1 - File Upload Processing",
+      "item": [
+        {
+          "name": "Simple Video Merge",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video_files",
+                  "type": "file",
+                  "src": "sample_videos/sample1.mp4"
+                },
+                {
+                  "key": "video_files",
+                  "type": "file",
+                  "src": "sample_videos/sample2.mp4"
+                },
+                {
+                  "key": "transition_type",
+                  "value": "fade",
+                  "type": "text"
+                },
+                {
+                  "key": "transition_duration",
+                  "value": "1.0",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/merge",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "merge"]
+            },
+            "description": "Merge multiple videos with transitions"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.job_id) {",
+                  "    pm.environment.set('job_id', jsonData.job_id);",
+                  "    console.log('Saved job_id: ' + jsonData.job_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Custom Transitions",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video_files",
+                  "type": "file",
+                  "src": "sample_videos/sample1.mp4"
+                },
+                {
+                  "key": "video_files",
+                  "type": "file",
+                  "src": "sample_videos/sample2.mp4"
+                },
+                {
+                  "key": "transition_file",
+                  "type": "file",
+                  "src": "sample_transitions/wipe.mp4"
+                },
+                {
+                  "key": "transition_type",
+                  "value": "custom",
+                  "type": "text"
+                },
+                {
+                  "key": "transition_duration",
+                  "value": "1.5",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/merge/transitions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "merge", "transitions"]
+            },
+            "description": "Merge videos with custom transition videos"
+          },
+          "response": []
+        },
+        {
+          "name": "Logo Overlay",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video_file",
+                  "type": "file",
+                  "src": "sample_videos/sample1.mp4"
+                },
+                {
+                  "key": "logo_file",
+                  "type": "file",
+                  "src": "logos/company_logo.png"
+                },
+                {
+                  "key": "position",
+                  "value": "top-right",
+                  "type": "text"
+                },
+                {
+                  "key": "opacity",
+                  "value": "0.8",
+                  "type": "text"
+                },
+                {
+                  "key": "scale",
+                  "value": "0.15",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/logo-overlay",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "logo-overlay"]
+            },
+            "description": "Add logo overlay to a video"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.job_id) {",
+                  "    pm.environment.set('logo_job_id', jsonData.job_id);",
+                  "    console.log('Saved logo_job_id: ' + jsonData.job_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Premium Processing",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video_file",
+                  "type": "file",
+                  "src": "sample_videos/sample1.mp4"
+                },
+                {
+                  "key": "logo_file",
+                  "type": "file",
+                  "src": "logos/company_logo.png"
+                },
+                {
+                  "key": "enable_smart_zooming",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "enable_smart_captioning",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "enable_logo_overlay",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "processing_quality",
+                  "value": "high",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/premium/process",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "premium", "process"]
+            },
+            "description": "Premium video processing with AI effects"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.job_id) {",
+                  "    pm.environment.set('premium_job_id', jsonData.job_id);",
+                  "    console.log('Saved premium_job_id: ' + jsonData.job_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "v2 - URL-Based Processing",
+      "item": [
+        {
+          "name": "Logo Overlay (URL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"video_url\": \"{{sample_video_url}}\",\n    \"logo_url\": \"{{sample_logo_url}}\",\n    \"position\": \"top-right\",\n    \"opacity\": 0.8,\n    \"scale\": 0.2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v2/logo-overlay",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v2", "logo-overlay"]
+            },
+            "description": "Add logo overlay to a video from URLs"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.output_url) {",
+                  "    pm.environment.set('v2_output_url', jsonData.output_url);",
+                  "    console.log('Saved v2_output_url: ' + jsonData.output_url);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Merge Videos (URL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"video_urls\": [\n        \"{{sample_video_url}}\",\n        \"{{sample_video_url2}}\"\n    ],\n    \"transition_type\": \"fade\",\n    \"transition_duration\": 1.0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v2/merge",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v2", "merge"]
+            },
+            "description": "Merge multiple videos from URLs"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.output_url) {",
+                  "    pm.environment.set('v2_merge_output_url', jsonData.output_url);",
+                  "    console.log('Saved v2_merge_output_url: ' + jsonData.output_url);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Merge with Transitions (URL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"video_urls\": [\n        \"{{sample_video_url}}\",\n        \"{{sample_video_url2}}\",\n        \"{{sample_video_url3}}\"\n    ],\n    \"transition_url\": \"{{transition_url}}\",\n    \"transition_type\": \"custom\",\n    \"transition_duration\": 1.5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v2/merge-with-transitions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v2", "merge-with-transitions"]
+            },
+            "description": "Merge videos with custom transitions from URLs"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.output_url) {",
+                  "    pm.environment.set('v2_transitions_output_url', jsonData.output_url);",
+                  "    console.log('Saved v2_transitions_output_url: ' + jsonData.output_url);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Premium Processing (URL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"video_url\": \"{{sample_video_url}}\",\n    \"effects\": [\"smart_zoom\", \"smart_caption\", \"color_enhance\"],\n    \"resolution\": \"1080p\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v2/premium/process",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v2", "premium", "process"]
+            },
+            "description": "Premium video processing with AI effects from URL"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.output_url) {",
+                  "    pm.environment.set('v2_premium_output_url', jsonData.output_url);",
+                  "    console.log('Saved v2_premium_output_url: ' + jsonData.output_url);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "v1 - Job Management",
+      "item": [
+        {
+          "name": "Get Job Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/jobs/{{job_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "jobs", "{{job_id}}"]
+            },
+            "description": "Get status of a submitted job"
+          },
+          "response": []
+        },
+        {
+          "name": "List User Jobs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/jobs?page=1&page_size=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "jobs"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "List all user jobs with pagination"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "v2 - Job Management",
+      "item": [
+        {
+          "name": "Get Job Status (S3 URLs)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v2/jobs/{{job_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v2", "jobs", "{{job_id}}"]
+            },
+            "description": "Get status of a job with direct S3/Supabase URLs"
+          },
+          "response": []
+        },
+        {
+          "name": "List User Jobs (S3 URLs)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v2/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v2", "jobs"]
+            },
+            "description": "List all user jobs with direct S3/Supabase URLs"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Credits Management",
+      "item": [
+        {
+          "name": "Get User Credits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/credits",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "credits"]
+            },
+            "description": "Get user's credit information"
+          },
+          "response": []
+        },
+        {
+          "name": "Estimate Credits for Job",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"job_type\": \"merge\",\n    \"parameters\": {\n        \"video_count\": 3,\n        \"total_duration\": 120,\n        \"resolution\": \"1080p\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/credits/estimate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "credits", "estimate"]
+            },
+            "description": "Estimate credits required for a job"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "File Download",
+      "item": [
+        {
+          "name": "Download Processed Video",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/download/{{output_filename}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "download", "{{output_filename}}"]
+            },
+            "description": "Download a processed video file"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin - User Management",
+      "item": [
+        {
+          "name": "Create User with Credits",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "email",
+                  "value": "newuser@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "New Test User",
+                  "type": "text"
+                },
+                {
+                  "key": "subscription_tier",
+                  "value": "premium",
+                  "type": "text"
+                },
+                {
+                  "key": "initial_credits",
+                  "value": "10000",
+                  "type": "text"
+                },
+                {
+                  "key": "admin_api_key",
+                  "value": "{{admin_api_key}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"]
+            },
+            "description": "Create a new user with initial credits"
+          },
+          "response": []
+        },
+        {
+          "name": "Provision Monthly Credits",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "credits_amount",
+                  "value": "5000",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Monthly credit provision",
+                  "type": "text"
+                },
+                {
+                  "key": "admin_api_key",
+                  "value": "{{admin_api_key}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}/credits",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}", "credits"]
+            },
+            "description": "Provision monthly credits for a user"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pre-request Scripts",
+      "item": [
+        {
+          "name": "Generate Sample URLs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Run to generate sample URLs for v2 endpoints"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// This script helps generate sample URLs based on the environment",
+                  "// These can then be used in the v2 endpoints that require URLs",
+                  "",
+                  "// Base URL for sample files",
+                  "const sampleBaseUrl = pm.variables.get('sample_files_url') || 'https://example-videos.s3.amazonaws.com';",
+                  "",
+                  "// Set sample URLs if not already set",
+                  "if (!pm.environment.get('sample_video_url')) {",
+                  "    pm.environment.set('sample_video_url', sampleBaseUrl + '/samples/sample1.mp4');",
+                  "}",
+                  "",
+                  "if (!pm.environment.get('sample_video_url2')) {",
+                  "    pm.environment.set('sample_video_url2', sampleBaseUrl + '/samples/sample2.mp4');",
+                  "}",
+                  "",
+                  "if (!pm.environment.get('sample_video_url3')) {",
+                  "    pm.environment.set('sample_video_url3', sampleBaseUrl + '/samples/sample3.mp4');",
+                  "}",
+                  "",
+                  "if (!pm.environment.get('sample_logo_url')) {",
+                  "    pm.environment.set('sample_logo_url', sampleBaseUrl + '/logos/logo.png');",
+                  "}",
+                  "",
+                  "if (!pm.environment.get('transition_url')) {",
+                  "    pm.environment.set('transition_url', sampleBaseUrl + '/transitions/wipe.mp4');",
+                  "}",
+                  "",
+                  "console.log('Sample URLs generated for v2 endpoints testing');",
+                  "console.log('sample_video_url: ' + pm.environment.get('sample_video_url'));",
+                  "console.log('sample_logo_url: ' + pm.environment.get('sample_logo_url'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

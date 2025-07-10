@@ -6,8 +6,10 @@ import shutil
 import logging
 from pathlib import Path
 from typing import Optional, Dict, Any, List
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 import requests
+
+from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -42,10 +44,18 @@ class LocalStorageService:
             # Copy file
             shutil.copy2(file_path, dest_path)
             
-            # Return local file URL
-            local_url = f"file://{dest_path.absolute()}"
-            logger.info(f"Uploaded file to local storage: {storage_path}")
-            return local_url
+            # Generate proper download URL using SERVER_URL environment variable
+            if storage_path.startswith("outputs/"):
+                # For output files, generate a public download URL
+                filename = os.path.basename(storage_path)
+                download_url = urljoin(settings.SERVER_URL, f"/api/v1/download/{filename}")
+                logger.info(f"Uploaded file to local storage with download URL: {download_url}")
+                return download_url
+            else:
+                # For temporary/internal files, use local file path
+                local_url = f"file://{dest_path.absolute()}"
+                logger.info(f"Uploaded file to local storage: {storage_path}")
+                return local_url
             
         except Exception as e:
             logger.error(f"Error uploading to local storage: {e}")

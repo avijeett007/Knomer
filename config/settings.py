@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     HOST: str = Field(default="0.0.0.0", env="HOST")
     PORT: int = Field(default=8000, env="PORT")
     DEBUG: bool = Field(default=False, env="DEBUG")
+    SERVER_URL: str = Field(default="http://localhost:8000", env="SERVER_URL")
     
     # Database Configuration
     USE_SQLITE: bool = Field(default=False, env="USE_SQLITE")

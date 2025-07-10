@@ -4,6 +4,7 @@ Main FastAPI application for Video Processing API v2.0
 import os
 import logging
 import tempfile
+from urllib.parse import quote, urljoin
 from typing import List, Optional
 from uuid import UUID, uuid4
 from datetime import datetime
@@ -67,9 +68,14 @@ security = HTTPBearer()
 
 # Services
 db_service = DatabaseService()
-credit_manager = CreditManager()
 storage_service = StorageService()
-auth_service = AuthService()
+credit_manager = CreditManager(db_service)
+auth_service = AuthService(db_service)
+
+# Helper function to generate download URLs using SERVER_URL
+def get_download_url(filename):
+    """Generate a proper download URL using SERVER_URL environment variable"""
+    return urljoin(settings.SERVER_URL, f"/api/v1/download/{filename}")
 
 # Dependency for API key authentication
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -770,7 +776,7 @@ async def create_premium_processing_job(
         shutil.rmtree(temp_dir)
 
         # Generate download URL
-        download_url = f"http://localhost:8001/api/v1/download/{output_filename}"
+        download_url = get_download_url(output_filename)
 
         return {
             "success": True,
@@ -806,7 +812,7 @@ async def get_premium_job_status(
 
         if premium_file.exists():
             file_size = premium_file.stat().st_size
-            download_url = f"http://localhost:8001/api/v1/download/{job_id}_premium.mp4"
+            download_url = get_download_url(f"{job_id}_premium.mp4")
 
             return {
                 "job_id": job_id,
@@ -955,7 +961,7 @@ async def merge_videos(
         estimated_credits = max(1, int(total_duration / 10))
 
         # Generate download URL
-        download_url = f"http://localhost:8001/api/v1/download/{output_filename}"
+        download_url = get_download_url(output_filename)
 
         return {
             "success": True,
@@ -1059,7 +1065,7 @@ async def merge_videos_with_transitions(
         estimated_credits = max(1, int(total_duration / 10 * 1.5))
 
         # Generate download URL
-        download_url = f"http://localhost:8001/api/v1/download/{output_filename}"
+        download_url = get_download_url(output_filename)
 
         return {
             "success": True,
@@ -1155,7 +1161,7 @@ async def add_logo_overlay(
         estimated_credits = max(1, int(duration_seconds / 10 * 1.2))
 
         # Generate download URL
-        download_url = f"http://localhost:8001/api/v1/download/{output_filename}"
+        download_url = get_download_url(output_filename)
 
         return {
             "success": True,
@@ -1207,7 +1213,7 @@ async def get_job_status(
 
         if output_file:
             file_size = output_file.stat().st_size
-            download_url = f"http://localhost:8001/api/v1/download/{output_file.name}"
+            download_url = get_download_url(output_file.name)
 
             return {
                 "job_id": job_id,
@@ -1349,6 +1355,14 @@ async def provision_monthly_credits(
     except Exception as e:
         logger.error(f"Error provisioning credits: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to provision credits: {str(e)}")
+
+# Import and include v2 endpoints
+try:
+    from api.v2_endpoints import router as v2_router
+    app.include_router(v2_router)
+    logger.info("V2 API endpoints loaded successfully")
+except ImportError as e:
+    logger.error(f"Failed to load V2 API endpoints: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
