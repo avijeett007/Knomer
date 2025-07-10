@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 class CreditManager:
     """Manages credit calculations, validation, and transactions"""
     
-    def __init__(self):
-        self.db_service = DatabaseService()
+    def __init__(self, db_service=None):
+        self.db_service = db_service if db_service else DatabaseService()
     
     def calculate_credits_for_job(
         self, 
