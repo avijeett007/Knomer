@@ -16,6 +16,7 @@ from services.storage_hybrid import HybridStorageService
 from services.auth import AuthService
 from services.credit_manager import CreditManager
 from api.main import get_current_user
+from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
