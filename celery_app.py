@@ -4,12 +4,24 @@ Celery configuration for async video processing
 import os
 from celery import Celery
 from config.settings import settings
+from ssl import CERT_NONE
+
+def prepare_redis_url(url):
+    """
+    Add SSL parameters to Redis URL if needed for Azure Redis Cache
+    
+    When using Azure Redis Cache with SSL (rediss://), we need to add
+    ssl_cert_reqs=CERT_NONE parameter to make it work with Celery.
+    """
+    if url and url.startswith('rediss://') and 'ssl_cert_reqs' not in url:
+        url = f"{url}?ssl_cert_reqs=CERT_NONE"
+    return url
 
 # Create Celery instance
 celery_app = Celery(
     "video_processor",
-    broker=settings.CELERY_BROKER_URL,
-    backend=settings.CELERY_RESULT_BACKEND,
+    broker=prepare_redis_url(settings.CELERY_BROKER_URL),
+    backend=prepare_redis_url(settings.CELERY_RESULT_BACKEND),
     include=[
         "tasks.video_processing",
         "tasks.cleanup"

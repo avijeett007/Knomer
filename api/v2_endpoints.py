@@ -4,6 +4,7 @@ API v2 Endpoints that work with S3/Supabase URLs instead of direct file uploads
 import logging
 import tempfile
 import subprocess
+import os
 from pathlib import Path
 from uuid import uuid4
 from typing import List, Dict, Any, Optional
